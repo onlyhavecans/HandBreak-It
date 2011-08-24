@@ -2,8 +2,8 @@
 # encoding: utf-8
 """
 Hand Break It
-This script is a brisk gui to batch processing of video files to AppleTV 2 encoded mp4,
-…using HandBrakeCLI. Cause I'm not writing an encoder in this.
+This script is a brisk gui to batch processing of video files to mp4 with the
+…AppleTV 2 present using HandBrakeCLI. I'm not writing an encoder in this.
 It pretends to be OS agnostic but it's obviously designed for OS X machines.
 
 Created by David "BunnyMan" on 2011-08-13.
@@ -18,8 +18,10 @@ import tkMessageBox
 import tkFileDialog
 import traceback
 
+
 class HandbrakeError(Exception):
 	pass
+
 
 class DebugError(Exception):
 	pass
@@ -27,13 +29,13 @@ class DebugError(Exception):
 
 def getRecursiveFiles(directory):
 	''' This isn't too special really,
-	just a copypaste function for crawling a path and getting all the files out of it.
-	Feed it a directory and it uses os.walk and some loops to return array of files
+	just a copypaste function for crawling a path and getting all the files
+	Feed it a directory and it uses os.walk to return array of files
 	'''
 	pinkiePie = []
 	for (dirname, subdirectories, files) in os.walk(directory):
 		for filename in files:
-			pinkiePie.append( os.path.join(dirname,filename) )
+			pinkiePie.append(os.path.join(dirname, filename))
 	return pinkiePie
 
 
@@ -44,10 +46,12 @@ def encodeFiles(inDirectory, outDirectory, recursive=True):
 	'''
 	handbrakeCLI = '/Applications/HandBrakeCLI'
 	if not os.path.isfile(handbrakeCLI):
-		raise HandbrakeError('HandbrakeCLI not installed. Please install before running')
+		raise HandbrakeError(
+			'HandbrakeCLI not installed. Please install before running'
+		)
 
 	if not os.path.isdir(outDirectory):
-		makedirs(outDirectory)
+		os.path.makedir(outDirectory)
 
 	ponies = []
 	if recursive:
@@ -58,13 +62,19 @@ def encodeFiles(inDirectory, outDirectory, recursive=True):
 	for episode in ponies:
 		trixie = os.path.basename(episode)
 		m4v = trixie[:-4] + '.m4v'
-		twilightSparkle = os.path.join( outDirectory, trixie)
+		twilightSparkle = os.path.join(outDirectory, m4v)
 		# TODO Make this OS neutral
 		# TODO Put in loging to file
 		# TODO http://docs.python.org/library/subprocess.html
-		Popen( [handbrakeCLI, '-i', episode, '-o', twilightSparkle, '--preset="AppleTV 2"'] )
+		Popen([
+			handbrakeCLI,
+			'-i', episode,
+			'-o', twilightSparkle,
+			'--preset="AppleTV 2"'
+		])
 
 	return(0)
+
 
 def cli_main(argv=sys.argv):
 	root = Tkinter.Tk()
@@ -96,13 +106,13 @@ def cli_main(argv=sys.argv):
 		# TODO This has a bug?
 		tkMessageBox.showerror(
 			"Hand Break It",
-			"I had a directory access error: %s" % e #traceback.format_exc() for debug
+			"I had a directory access error: %s" % e  # traceback.format_exc() for debug
 		)
 		return(1)
 	except HandbrakeError, e:
 		tkMessageBox.showerror(
 			"Hand Break It",
-			"HandBrake had an error: %s" % e #traceback.format_exc() for debug level
+			"HandBrake had an error: %s" % e  # traceback.format_exc() for debug level
 		)
 		return(1)
 	except DebugError, e:
@@ -114,11 +124,14 @@ def cli_main(argv=sys.argv):
 	except Exception, e:
 		tkMessageBox.showerror(
 			"Hand Break It error",
-			"I had an error:\n %s" % e #traceback.format_exc() for debug level
+			"I had an error:\n %s" % e  # traceback.format_exc() for debug level
 		)
 		return(1)
 
-	tkMessageBox.showinfo("Done", "I, PhotoFinish, am done.\nCheck the Log for details")
+	tkMessageBox.showinfo(
+			"Done",
+			"I, PhotoFinish, am done.\nCheck the Log for details"
+		)
 	return 0
 
 
