@@ -2,9 +2,14 @@
 # encoding: utf-8
 """
 Hand Break It
-This script is a brisk gui to batch processing of video files to mp4 with the
-…AppleTV 2 present using HandBrakeCLI. I'm not writing an encoder in this.
-It pretends to be OS agnostic but it's obviously designed for OS X machines.
+This program is a wrapper to the HandBrakeCLI Application. It is designed to
+help batch encode chunks of videos without having to contantly use custom one
+line bash scripts. It uses presets only to simplify the process.
+It also can be used as a "slightly easier to use" quick front end to processing
+a batch of video files as if run without any flags it will prompt for
+directories with gui windows.
+I would like to make it OS agnostic eventually but it is starting Mac OS X only
+
 
 Created by David "BunnyMan" on 2011-08-13.
 Copyright (c) 2011 White Rabbit Code. All rights reserved.
@@ -12,7 +17,9 @@ Copyright (c) 2011 White Rabbit Code. All rights reserved.
 
 import sys
 import os
-from subprocess import call
+import re
+from subprocess import call, check_output
+import argparse
 import Tkinter
 import tkMessageBox
 import tkFileDialog
@@ -27,6 +34,36 @@ class DebugError(Exception):
     pass
 
 
+def parseArguments():
+    """This sets up all the arguments the program takes and then returns the
+    results of parse_args() so none of it needs to be done in main
+    """
+    parser = argparse.ArgumentParser(description="Batch encode a directory of\
+        video files using handbrake presets")
+    parser.add_argument('--in-directory', '-i',
+        help="Input directory. You need both -in & -out to run headless")
+    parser.add_argument('--out-directory', '-o',
+        help="Output directory. You need both -in & -out to run headless")
+    parser.add_argument('--recursive', '-r', action='store_false',
+        default=True, help="DISABLE recursive scanning of input directory")
+    parser.add_argument('--preset', '-p', default='Universal',
+        help="Handbrake preset to use, defaults to Apple Universal")
+    parser.add_argument('--list-presets', '-l', action='store_true',
+        help="List availible presets and quit")
+    return parser.parse_args()
+
+
+def getPresets():
+    """This runs the HandBrakeCLI command and parses output.
+    It returns an array of the valid preset names."""
+    # TODO Make OS agnostic, searchpath
+    handbrakeCLI = '/Applications/HandBrakeCLI'
+    output = check_output([handbrakeCLI, '--preset-list'])
+    patern = re.compile('\+ ([\w\s]+):')
+    presets = re.findall(patern, output)
+    return presets
+
+
 def getRecursiveFiles(directory):
     ''' This isn't too special really,
     just a copypaste function for crawling a path and getting all the files
@@ -39,61 +76,79 @@ def getRecursiveFiles(directory):
     return fileArray
 
 
-def encodeFiles(inDirectory, outDirectory, recursive=True):
-    ''' This is is the encoder,
-    it lists up all the files and runs HandBrakeCLI with the Apple TV 2 Preset
-    This is the hook, you like it.
-    '''
+def encodeFile(inFile, outDirectory, preset="Universal"):
+    # TODO Make OS agnostic, use searchpath
     handbrakeCLI = '/Applications/HandBrakeCLI'
     if not os.path.isfile(handbrakeCLI):
         raise HandbrakeError(
             'HandbrakeCLI not installed in Applications! Please install.')
+    outFile = os.path.basename(inFile)[:-4] + '.m4v'
+    outFile = os.path.join(outDirectory, outFile)
+    # TODO Put in loging to file
+    # TODO http://docs.python.org/library/subprocess.html
+    call([handbrakeCLI, '-Z', preset, '-i', inFile, '-o', outFile])
 
+
+def cliMain(args):
+    """ This is the cli version, it's designed to run completely "headless".
+    """
+    inDirectory, outDirectory = args.in_directory, args.out_directory
     if not os.path.isdir(outDirectory):
         os.path.makedirs(outDirectory)
 
     videos = []
-    if recursive:
+    if args.recursive:
         videos = getRecursiveFiles(inDirectory)
     else:
         videos = os.listdir(inDirectory)
 
-    for episode in videos:
-        outfile = os.path.basename(episode)[:-4] + '.m4v'
-        outfile = os.path.join(outDirectory, outfile)
-        # TODO Put in loging to file
-        # TODO http://docs.python.org/library/subprocess.html
-        call([handbrakeCLI, '-i', episode, '-o', outfile, 
-              '--preset="AppleTV 2"'])
-    return(0)
+    try:
+        for episode in videos:
+            encodeFile(episode, outDirectory, args.preset)
+    except OSError, e:
+        print "I had a directory access error: %s" % e
+        return(1)
+    except HandbrakeError, e:
+        print "HandBrake had an error: %s" % e
+        return(1)
+    except DebugError, e:
+        print "Debug Throw: %s" % traceback.format_exc()
+        return(1)
+    except Exception, e:
+        print "I had an error:\n %s" % traceback.format_exc()
+        return(1)
+
+    print "I, PhotoFinish, am done.\nCheck the Log for details"
+    return 0
 
 
-def cli_main(argv=sys.argv):
-    """ This is the cli version, it's designed to have an extra sparse
-    totally optional GUI so that it can be run completely headless.
-    """
+def guiMain(args):
+    """This is the gui version, it will prompt for what information it needs
+    and also uses pop ups to display errors"""
     root = Tkinter.Tk()
     root.withdraw()
-    progname = os.path.basename(argv[0])
-    args = argv[1:]
+    
+    inDirectory = tkFileDialog.askdirectory(title="Pick Video Directory",
+        mustexist=True)
+    outDirectory = tkFileDialog.askdirectory(title="Pick Output Directory",
+        mustexist=False)
+    if not inDirectory or not outDirectory:
+        tkMessageBox.showerror(
+            "Hand Break It",
+            "You have to select both in and out directories")
+        return(1)
+    if not os.path.isdir(outDirectory):
+        os.path.makedirs(outDirectory)
 
-    if len(args) != 2:
-        inpath = tkFileDialog.askdirectory(
-            title="Pick Video Directory",
-            mustexist=True)
-        outpath = tkFileDialog.askdirectory(
-            title="Pick Output Directory",
-            mustexist=False)
+    videos = []
+    if args.recursive:
+        videos = getRecursiveFiles(inDirectory)
     else:
-        (inpath, outpath) = args
-
-    if inpath == "" or outpath == "":
-        sys.stderr.write("usage: %s InDirectory OutDirectory\n" % progname)
-        return 1
+        videos = os.listdir(inDirectory)
 
     try:
-        encodeFiles(inpath, outpath)
-
+        for episode in videos:
+            encodeFile(episode, outDirectory, args.preset)
     except OSError, e:
         tkMessageBox.showerror(
             "Hand Break It",
@@ -112,13 +167,21 @@ def cli_main(argv=sys.argv):
     except Exception, e:
         tkMessageBox.showerror(
             "Hand Break It error",
-            "I had an error:\n %s" %  traceback.format_exc())
+            "I had an error:\n %s" % traceback.format_exc())
         return(1)
-
     tkMessageBox.showinfo("Done",
         "I, PhotoFinish, am done.\nCheck the Log for details")
     return 0
 
 
 if __name__ == '__main__':
-    sys.exit(cli_main())
+    args = parseArguments()
+    presets = getPresets()
+    if args.list_presets:
+        print "Available presets; %s." % ", ".join(presets)
+        print "Please check HandBrake for more information."
+        sys.exit(0)
+    if args.in_directory and args.out_directory:
+        sys.exit(cliMain(args))
+    else:
+        sys.exit(guiMain(args))
