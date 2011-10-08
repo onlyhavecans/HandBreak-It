@@ -105,16 +105,16 @@ def cliMain(args):
         for episode in videos:
             encodeFile(episode, outDirectory, args.preset)
     except OSError, e:
-        print "I had a directory access error: %s" % e
+        print "I had a directory access error: {}".format(e)
         return 1
     except HandbrakeError, e:
-        print "HandBrake had an error: %s" % e
+        print "HandBrake had an error: {}".format(e)
         return 1
     except DebugError, e:
-        print "Debug Throw: %s" % traceback.format_exc()
+        print "Debug Throw: {}".format(traceback.format_exc())
         return 1
     except Exception, e:
-        print "I had an error:\n %s" % traceback.format_exc()
+        print "I had an error:\n {}".format(traceback.format_exc())
         return 1
 
     print "I, PhotoFinish, am done.\nCheck the Log for details"
@@ -150,22 +150,22 @@ def guiMain(args):
     except OSError, e:
         tkMessageBox.showerror(
             "Hand Break It",
-            "I had a directory access error: %s" % e)
+            "I had a directory access error: {}".format(e))
         return 1
     except HandbrakeError, e:
         tkMessageBox.showerror(
             "Hand Break It",
-            "HandBrake had an error: %s" % e)
+            "HandBrake had an error: {}".format(e))
         return 1
     except DebugError, e:
         tkMessageBox.showerror(
             "Hand Break It",
-            "Debug Throw: %s" % traceback.format_exc())
+            "Debug Throw: {}".format(traceback.format_exc()))
         return 1
     except Exception, e:
         tkMessageBox.showerror(
             "Hand Break It error",
-            "I had an error:\n %s" % traceback.format_exc())
+            "I had an error:\n {}".format(traceback.format_exc()))
         return 1
     tkMessageBox.showinfo("Done",
         "I, PhotoFinish, am done.\nCheck the Log for details")
