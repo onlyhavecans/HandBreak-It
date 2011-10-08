@@ -3,13 +3,11 @@
 """
 Hand Break It
 This program is a wrapper to the HandBrakeCLI Application. It is designed to
-help batch encode chunks of videos without having to contantly use custom one
+help batch encode chunks of videos without having to constantly use custom one
 line bash scripts. It uses presets only to simplify the process.
 It also can be used as a "slightly easier to use" quick front end to processing
 a batch of video files as if run without any flags it will prompt for
 directories with gui windows.
-I would like to make it OS agnostic eventually but it is starting Mac OS X only
-
 
 Created by David "BunnyMan" on 2011-08-13.
 Copyright (c) 2011 White Rabbit Code. All rights reserved.
