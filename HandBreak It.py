@@ -59,7 +59,7 @@ def getPresets():
     output = check_output([handbrakeCLI, '--preset-list'])
     pattern = re.compile('\+ ([\w\s]+):')
     presets = re.findall(pattern, output)
-    return presets
+    return tuple(presets)
 
 
 def getRecursiveFiles(directory):
@@ -172,11 +172,17 @@ def guiMain(args):
 
 if __name__ == '__main__':
     args = parseArguments()
+    #This wouldn't need to be in main if we used some objects, next ver
     presets = getPresets()
     if args.list_presets:
-        print "Available presets; %s." % ", ".join(presets)
+        print "Available presets; {}.".format(", ".join(presets))
         print "Please check HandBrake for more information."
         sys.exit(0)
+    if not args.preset in presets:
+        print "Preset \"{}\" is not in the valid preset list".format(args.preset)
+        print "Available presets; {}.".format(", ".join(presets))
+        print "Please check HandBrake for more information."
+        sys.exit("9")
     if args.in_directory and args.out_directory:
         sys.exit(cliMain(args))
     else:
