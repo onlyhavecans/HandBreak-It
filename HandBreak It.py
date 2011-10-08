@@ -54,7 +54,6 @@ def parseArguments():
 def getPresets():
     """This runs the HandBrakeCLI command and parses output.
     It returns an array of the valid preset names."""
-    # TODO Make OS agnostic, searchpath
     handbrakeCLI = '/Applications/HandBrakeCLI'
     output = check_output([handbrakeCLI, '--preset-list'])
     pattern = re.compile('\+ ([\w\s]+):')
@@ -75,14 +74,12 @@ def getRecursiveFiles(directory):
 
 
 def encodeFile(inFile, outDirectory, preset="Universal"):
-    # TODO Make OS agnostic, use searchpath
     handbrakeCLI = '/Applications/HandBrakeCLI'
     if not os.path.isfile(handbrakeCLI):
         raise HandbrakeError(
             'HandbrakeCLI not installed in Applications! Please install.')
     outFile = os.path.basename(inFile)[:-4] + '.m4v'
     outFile = os.path.join(outDirectory, outFile)
-    # TODO Put in loging to file
     call([handbrakeCLI, '-Z', preset, '-i', inFile, '-o', outFile])
 
 
@@ -93,7 +90,6 @@ def cliMain(args):
     if not os.path.isdir(outDirectory):
         os.makedirs(outDirectory)
 
-    videos = []
     if args.recursive:
         videos = getRecursiveFiles(inDirectory)
     else:
@@ -108,10 +104,10 @@ def cliMain(args):
     except HandbrakeError, e:
         print "HandBrake had an error: {}".format(e)
         return 1
-    except DebugError, e:
+    except DebugError:
         print "Debug Throw: {}".format(traceback.format_exc())
         return 1
-    except Exception, e:
+    except Exception:
         print "I had an error:\n {}".format(traceback.format_exc())
         return 1
 
@@ -136,7 +132,6 @@ def guiMain(args):
     if not os.path.isdir(outDirectory):
         os.makedirs(outDirectory)
 
-    videos = []
     if args.recursive:
         videos = getRecursiveFiles(inDirectory)
     else:
@@ -155,24 +150,23 @@ def guiMain(args):
             "Hand Break It",
             "HandBrake had an error: {}".format(e))
         return 1
-    except DebugError, e:
+    except DebugError:
         tkMessageBox.showerror(
             "Hand Break It",
             "Debug Throw: {}".format(traceback.format_exc()))
         return 1
-    except Exception, e:
+    except Exception:
         tkMessageBox.showerror(
             "Hand Break It error",
             "I had an error:\n {}".format(traceback.format_exc()))
         return 1
     tkMessageBox.showinfo("Done",
-        "I, PhotoFinish, am done.\nCheck the Log for details")
+        "I am done!\nCheck the Log for details")
     return 0
 
 
 if __name__ == '__main__':
     args = parseArguments()
-    #This wouldn't need to be in main if we used some objects, next ver
     presets = getPresets()
     if args.list_presets:
         print "Available presets; {}.".format(", ".join(presets))
