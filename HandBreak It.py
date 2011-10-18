@@ -22,14 +22,13 @@ import traceback
 
 
 class HandbrakeError(Exception):
+    """
+    The exception used for handbrake blowing up.
+    """
     pass
 
 
-class DebugError(Exception):
-    pass
-
-
-def parseArguments():
+def parse_arguments():
     """This sets up all the arguments the program takes and then returns the
     results of parse_args() so none of it needs to be done in main
     """
@@ -48,17 +47,17 @@ def parseArguments():
     return parser.parse_args()
 
 
-def getPresets():
+def get_presets():
     """This runs the HandBrakeCLI command and parses output.
     It returns an array of the valid preset names."""
-    handbrakeCLI = '/Applications/HandBrakeCLI'
-    output = check_output([handbrakeCLI, '--preset-list'])
+    handbrakeApp = '/Applications/HandBrakeCLI'
+    output = check_output([handbrakeApp, '--preset-list'])
     pattern = re.compile('\+ ([\w\s]+):')
-    presets = re.findall(pattern, output)
-    return tuple(presets)
+    presetList = re.findall(pattern, output)
+    return tuple(presetList)
 
 
-def getRecursiveFiles(directory):
+def get_recursive_files(directory):
     """This isn't too special really,
     just a copy/paste function for crawling a path and getting all the files
     Feed it a directory and it uses os.walk to return array of files
@@ -70,7 +69,11 @@ def getRecursiveFiles(directory):
     return fileArray
 
 
-def encodeFile(inFile, outDirectory, preset="Universal"):
+def encode_file(inFile, outDirectory, preset="Universal"):
+    """
+    Pass this a video file, output directory and optionally a handbrake preset
+    Nothing is returned
+    """
     handbrakeCLI = '/Applications/HandBrakeCLI'
     if not os.path.isfile(handbrakeCLI):
         raise HandbrakeError(
@@ -80,7 +83,7 @@ def encodeFile(inFile, outDirectory, preset="Universal"):
     call([handbrakeCLI, '-Z', preset, '-i', inFile, '-o', outFile])
 
 
-def cliMain(args):
+def cli_main(arg):
     """ This is the cli version, it's designed to run completely "headless".
     """
     inDirectory, outDirectory = args.in_directory, args.out_directory
@@ -88,22 +91,19 @@ def cliMain(args):
         os.makedirs(outDirectory)
 
     if args.recursive:
-        videos = getRecursiveFiles(inDirectory)
+        videos = get_recursive_files(inDirectory)
     else:
-        videos = [ os.path.join(inDirectory, videoFile) for
-                   videoFile in os.listdir(inDirectory) ]
+        videos = [os.path.join(inDirectory, videoFile) for
+                   videoFile in os.listdir(inDirectory)]
 
     try:
         for episode in videos:
-            encodeFile(episode, outDirectory, args.preset)
+            encode_file(episode, outDirectory, args.preset)
     except OSError, e:
         print "I had a directory access error: {}".format(e)
         return 1
     except HandbrakeError, e:
         print "HandBrake had an error: {}".format(e)
-        return 1
-    except DebugError:
-        print "Debug Throw: {}".format(traceback.format_exc())
         return 1
     except Exception:
         print "I had an error:\n {}".format(traceback.format_exc())
@@ -113,7 +113,7 @@ def cliMain(args):
     return 0
 
 
-def guiMain(args):
+def gui_main(args):
     """This is the gui version, it will prompt for what information it needs
     and also uses pop ups to display errors"""
     import Tkinter
@@ -134,14 +134,14 @@ def guiMain(args):
         os.makedirs(outDirectory)
 
     if args.recursive:
-        videos = getRecursiveFiles(inDirectory)
+        videos = get_recursive_files(inDirectory)
     else:
-        videos = [ os.path.join(inDirectory, videoFile) for 
-                   videoFile in os.listdir(inDirectory) ]
+        videos = [os.path.join(inDirectory, videoFile) for
+                   videoFile in os.listdir(inDirectory)]
 
     try:
         for episode in videos:
-            encodeFile(episode, outDirectory, args.preset)
+            encode_file(episode, outDirectory, args.preset)
     except OSError, e:
         tkMessageBox.showerror(
             "Hand Break It",
@@ -168,18 +168,18 @@ def guiMain(args):
 
 
 if __name__ == '__main__':
-    args = parseArguments()
-    presets = getPresets()
+    args = parse_arguments()
+    presetTuple = get_presets()
     if args.list_presets:
-        print "Available presets; {}.".format(", ".join(presets))
+        print "Available presets; {}.".format(", ".join(presetTuple))
         print "Please check HandBrake for more information."
         sys.exit(0)
-    if not args.preset in presets:
-        print "Preset \"{}\" is not in the valid preset list".format(args.preset)
-        print "Available presets; {}.".format(", ".join(presets))
+    if not args.preset in presetTuple:
+        print "\"{}\" is not in the valid preset list".format(args.preset)
+        print "Available presets; {}.".format(", ".join(presetTuple))
         print "Please check HandBrake for more information."
         sys.exit("9")
     if args.in_directory and args.out_directory:
-        sys.exit(cliMain(args))
+        sys.exit(cli_main(args))
     else:
-        sys.exit(guiMain(args))
+        sys.exit(gui_main(args))
