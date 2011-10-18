@@ -5,6 +5,8 @@ The goal behind this is not to replace Handbrake gui but to add a way to quickly
 I am currently taking what started as a simple script and am trying to refactor it in to a full program.
 
 ## Versions
+* 1.5.1
+    * Fixes a bug where nothing would encode when using non-recursive (-r & --recursive)
 * 1.5
     * Takes the preset as a flag, and will default to Apple > Universal as its default encoding preset.
     * If run without the in and out flags the sparse gui will come up to prompt.

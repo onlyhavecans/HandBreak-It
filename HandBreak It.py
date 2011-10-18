@@ -93,7 +93,8 @@ def cliMain(args):
     if args.recursive:
         videos = getRecursiveFiles(inDirectory)
     else:
-        videos = os.listdir(inDirectory)
+        videos = [ os.path.join(inDirectory, videoFile) for
+                   videoFile in os.listdir(inDirectory) ]
 
     try:
         for episode in videos:
@@ -135,7 +136,8 @@ def guiMain(args):
     if args.recursive:
         videos = getRecursiveFiles(inDirectory)
     else:
-        videos = os.listdir(inDirectory)
+        videos = [ os.path.join(inDirectory, videoFile) for 
+                   videoFile in os.listdir(inDirectory) ]
 
     try:
         for episode in videos:
