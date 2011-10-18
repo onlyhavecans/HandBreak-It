@@ -18,9 +18,6 @@ import os
 import re
 from subprocess import call, check_output
 import argparse
-import Tkinter
-import tkMessageBox
-import tkFileDialog
 import traceback
 
 
@@ -119,6 +116,9 @@ def cliMain(args):
 def guiMain(args):
     """This is the gui version, it will prompt for what information it needs
     and also uses pop ups to display errors"""
+    import Tkinter
+    import tkMessageBox
+    import tkFileDialog
     root = Tkinter.Tk()
     root.withdraw()
     inDirectory = tkFileDialog.askdirectory(title="Pick Video Directory",
