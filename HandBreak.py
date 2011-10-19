@@ -265,16 +265,16 @@ def cli_main(arguments):
     return 0
 
 if __name__ == '__main__':
-    args = parse_arguments()
-    if args.list_presets:
+    ARGS = parse_arguments()
+    if ARGS.list_presets:
         print_presets()
         sys.exit(0)
-    if not check_valid_preset(args.preset):
+    if not check_valid_preset(ARGS.preset):
         print("\"{}\" is not in the valid preset list".format(
-            args.preset))
+            ARGS.preset))
         print_presets()
         sys.exit("9")
-    if args.in_directory and args.out_directory:
-        sys.exit(cli_main(args))
+    if ARGS.in_directory and ARGS.out_directory:
+        sys.exit(cli_main(ARGS))
     else:
-        sys.exit(gui_main(args))
+        sys.exit(gui_main(ARGS))
