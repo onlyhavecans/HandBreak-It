@@ -83,7 +83,7 @@ def encode_file(inFile, outDirectory, preset="Universal"):
     call([handbrakeCLI, '-Z', preset, '-i', inFile, '-o', outFile])
 
 
-def cli_main(arg):
+def cli_main(args):
     """ This is the cli version, it's designed to run completely "headless".
     """
     inDirectory, outDirectory = args.in_directory, args.out_directory
@@ -151,11 +151,6 @@ def gui_main(args):
         tkMessageBox.showerror(
             "Hand Break It",
             "HandBrake had an error: {}".format(e))
-        return 1
-    except DebugError:
-        tkMessageBox.showerror(
-            "Hand Break It",
-            "Debug Throw: {}".format(traceback.format_exc()))
         return 1
     except Exception:
         tkMessageBox.showerror(
