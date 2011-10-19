@@ -10,7 +10,7 @@ I am currently taking what started as a simple script and am trying to refactor 
 * 2.0 (Next version, **trunk**)
     * Major Rewrite!
     * Program renamed
-    * First version with full linux & windows compatability! (coming soon)
+    * First version with full linux & windows compatability!
 * 1.5.1
     * Fixes a bug where nothing would encode when using non-recursive (-r & --recursive)
 * 1.5
