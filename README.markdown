@@ -23,11 +23,11 @@ I am currently taking what started as a simple script and am trying to refactor 
     * It only uses the AppleTV 2 preset.
     * This version is currently only for Mac OS X
 
-## Usage
+## QuickStart
 1. Download HandBrakeCLI from http://handbrake.fr/downloads2.php
 2. Install
     * Windows users should put HandBrakeCLI.exe in the SAME directory as the script
     * Mac OS X users should install it in /Applications
     * Unix/Linux users should put it anywhere in path
-2. Run this script from the command line or double click for GUI mode
+2. Run this script from the command line using "python HandBreak.pyw" or double click for sparse GUI mode
 3. Enjoy
